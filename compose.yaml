@@ -1,0 +1,49 @@
+name: mullet_ros_vio
+
+x-ros-environment: &ros-environment
+  ROS_DOMAIN_ID: ${ROS_DOMAIN_ID:-0}
+  RMW_IMPLEMENTATION: ${RMW_IMPLEMENTATION:-rmw_fastrtps_cpp}
+  NVIDIA_VISIBLE_DEVICES: ${NVIDIA_VISIBLE_DEVICES:-all}
+  NVIDIA_DRIVER_CAPABILITIES: ${NVIDIA_DRIVER_CAPABILITIES:-compute,utility}
+
+services:
+  realsense:
+    profiles: [realsense, openvins]
+    image: ${REALSENSE_IMAGE:-ghcr.io/skymule-ai/mullet-ros-realsense:v0.2.0}
+    network_mode: host
+    runtime: nvidia
+    environment: *ros-environment
+    devices:
+      - /dev/bus/usb:/dev/bus/usb
+    volumes:
+      - ./config/realsense:/config:ro
+    command:
+      - ros2
+      - launch
+      - realsense2_camera
+      - rs_launch.py
+      - config_file:=/config/d435i.yaml
+      - camera_namespace:=${REALSENSE_CAMERA_NAMESPACE:-uav0}
+      - camera_name:=${REALSENSE_CAMERA_NAME:-d435i}
+      - tf_prefix:=${REALSENSE_TF_PREFIX:-uav0/d435i}
+
+  openvins:
+    profiles: [openvins]
+    build:
+      context: .
+      dockerfile: images/openvins/Dockerfile
+      args:
+        BASE_IMAGE: ${BASE_IMAGE:-ghcr.io/skymule-ai/mullet-ros2-base:v0.4.0}
+    image: ${OPENVINS_IMAGE:-ghcr.io/skymule-ai/mullet-ros-vio-openvins:local}
+    network_mode: host
+    runtime: nvidia
+    depends_on:
+      realsense:
+        condition: service_started
+    environment: *ros-environment
+    volumes:
+      - ./config/openvins:/config:ro
+    command:
+      - bash
+      - -lc
+      - ${OPENVINS_COMMAND:-exec sleep infinity}
