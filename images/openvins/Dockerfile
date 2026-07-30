@@ -15,6 +15,34 @@ LABEL org.opencontainers.image.description="OpenVINS container scaffold for the 
 #   4. Leave /opt/openvins_ws/install/setup.bash for the entrypoint to source.
 #   5. Replace the scaffold command with the validated ROS 2 launch command.
 
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  libeigen3-dev libboost-all-dev libceres-dev \
+  libopencv-dev python3-opencv \
+  python3-dev python3-matplotlib python3-numpy \
+  python3-psutil python3-tk \
+  ros-humble-cv-bridge ros-humble-image-transport \
+  && rm -rf /var/lib/apt/lists/*
+
+RUN mkdir -p /opt/openvins_ws/src/ \
+  && cd /opt/openvins_ws/src/ \
+  && git clone https://github.com/rpng/open_vins/
+
+ RUN source /opt/ros/humble/setup.bash \
+&& cd /opt/openvins_ws/ \
+&& colcon build --event-handlers console_cohesion+ \
+--packages-select ov_core ov_init ov_eval \
+--parallel-workers 1 \
+--cmake-args -DCMAKE_BUILD_TYPE=Release
+
+RUN source /opt/ros/humble/setup.bash \
+  && cd /opt/openvins_ws/ \
+  && colcon build \
+    --packages-select ov_msckf \
+    --parallel-workers 1 \
+    --executor sequential \
+    --cmake-args -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-O0" \
+  || (cd /opt/openvins_ws/build/ov_msckf && make -j1 CXXFLAGS="-O0")
+
 COPY images/openvins/entrypoint.sh /usr/local/bin/mullet-openvins-entrypoint
 COPY images/openvins/profile.sh /etc/profile.d/10-mullet-openvins.sh
 

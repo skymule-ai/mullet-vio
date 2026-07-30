@@ -7,7 +7,7 @@ enable_gyro: true
 unite_imu_method: 2
 enable_sync: true
 align_depth.enable: true
-pointcloud__neon_.enable: false
+pointcloud__neon_.enable: true
 pointcloud__neon_.stream_filter: 2
 pointcloud__neon_.stream_index_filter: 0
 pointcloud__neon_.allow_no_texture_points: true

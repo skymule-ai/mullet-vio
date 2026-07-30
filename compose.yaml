@@ -11,6 +11,7 @@ services:
     profiles: [realsense, openvins]
     image: ${REALSENSE_IMAGE:-ghcr.io/skymule-ai/mullet-ros-realsense:v0.2.0}
     network_mode: host
+    ipc: host
     runtime: nvidia
     environment: *ros-environment
     devices:
@@ -36,6 +37,7 @@ services:
         BASE_IMAGE: ${BASE_IMAGE:-ghcr.io/skymule-ai/mullet-ros2-base:v0.4.0}
     image: ${OPENVINS_IMAGE:-ghcr.io/skymule-ai/mullet-ros-vio-openvins:local}
     network_mode: host
+    ipc: host
     runtime: nvidia
     depends_on:
       realsense:
