@@ -3,6 +3,10 @@ FROM ${BASE_IMAGE}
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
+# Pin OPENVINS_REF to a full commit SHA for reproducible production images.
+ARG OPENVINS_REPOSITORY=https://github.com/skymule-ai/open_vins.git
+ARG OPENVINS_REF=55c5767995a88444079491cba898e384435b0ed1
+
 LABEL org.opencontainers.image.title="mullet ROS OpenVINS"
 LABEL org.opencontainers.image.description="OpenVINS container scaffold for the Mullet Jetson platform"
 
@@ -25,7 +29,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN mkdir -p /opt/openvins_ws/src/ \
   && cd /opt/openvins_ws/src/ \
-  && git clone https://github.com/skymule-ai/open_vins.git
+  && git clone "${OPENVINS_REPOSITORY}" open_vins \
+  && cd open_vins \
+  && git checkout "${OPENVINS_REF}"
 
  RUN source /opt/ros/humble/setup.bash \
 && cd /opt/openvins_ws/ \

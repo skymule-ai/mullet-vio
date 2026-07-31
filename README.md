@@ -48,7 +48,7 @@ config/vins-fusion/
 Add a separate Compose service and CI matrix entry rather than installing both
 implementations into the same image.
 
-## Current scaffold
+## Build OpenVINS
 
 Create the local environment file:
 
@@ -63,13 +63,25 @@ anything:
 ./scripts/validate.sh
 ```
 
-The current OpenVINS container deliberately runs `sleep infinity`
+The OpenVINS image builds the `skymule-ai/open_vins` fork. Its source and
+revision are build arguments:
+
+```dotenv
+OPENVINS_REPOSITORY=https://github.com/skymule-ai/open_vins.git
+OPENVINS_REF=55c5767995a88444079491cba898e384435b0ed1
+```
+
+`OPENVINS_REF` should be a full commit SHA for reproducible images. To build a
+different fork or revision locally, set these values in `.env` before building.
 
 Build the local image:
 
 ```bash
 docker compose --profile openvins build openvins
 ```
+
+Changing `OPENVINS_REF` also invalidates the Docker layer that checks out
+OpenVINS, ensuring the requested revision is rebuilt.
 
 This command will start both RealSense and OpenVINS:
 
@@ -96,6 +108,16 @@ between `mullet-ros2-base` and those images.
 
 CI builds for ARM64. Branch pushes publish branch and immutable SHA tags;
 release tags such as `v0.1.0` publish matching image tags.
+
+To build and publish an updated OpenVINS fork revision without changing this
+repository, use **Actions → Build and Push VIO Images → Run workflow**. Supply
+the fork URL as `openvins_repository` and the full fork commit SHA as
+`openvins_ref`. A manually dispatched run logs in to GHCR and publishes the
+image just like a push-triggered run.
+
+Normal CI builds use the pinned OpenVINS revision shown above. GitHub Actions
+repository variables `OPENVINS_REPOSITORY` and `OPENVINS_REF`, when set,
+override those CI defaults.
 
 The initial image name is:
 

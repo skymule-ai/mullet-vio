@@ -6,6 +6,18 @@ on:
   push:
     branches: ["**"]
     tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      openvins_repository:
+        description: OpenVINS Git repository to build
+        required: false
+        default: https://github.com/skymule-ai/open_vins.git
+        type: string
+      openvins_ref:
+        description: OpenVINS ref to build (prefer a full commit SHA)
+        required: false
+        default: 55c5767995a88444079491cba898e384435b0ed1
+        type: string
 
 jobs:
   build-and-push:
@@ -27,7 +39,7 @@ jobs:
       - uses: docker/setup-buildx-action@v3
 
       - name: Log in to GHCR
-        if: github.event_name == 'push'
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -50,9 +62,11 @@ jobs:
           context: .
           file: ${{ matrix.dockerfile }}
           platforms: linux/arm64
-          push: ${{ github.event_name == 'push' }}
+          push: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
           build-args: |
             BASE_IMAGE=ghcr.io/skymule-ai/mullet-ros2-base:v0.4.0
+            OPENVINS_REPOSITORY=${{ inputs.openvins_repository || vars.OPENVINS_REPOSITORY || 'https://github.com/skymule-ai/open_vins.git' }}
+            OPENVINS_REF=${{ inputs.openvins_ref || vars.OPENVINS_REF || '55c5767995a88444079491cba898e384435b0ed1' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=${{ matrix.implementation }}
