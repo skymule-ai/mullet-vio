@@ -25,7 +25,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN mkdir -p /opt/openvins_ws/src/ \
   && cd /opt/openvins_ws/src/ \
-  && git clone https://github.com/rpng/open_vins/
+  && git clone https://github.com/skymule-ai/open_vins.git
 
  RUN source /opt/ros/humble/setup.bash \
 && cd /opt/openvins_ws/ \
