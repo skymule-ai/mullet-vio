@@ -2,16 +2,23 @@
 # Vehicle-specific calibration belongs in the deployment repository.
 enable_color: true
 enable_depth: true
+enable_infra1: true
+enable_infra2: true
 enable_accel: true
 enable_gyro: true
 unite_imu_method: 2
 enable_sync: true
 align_depth.enable: true
+
 pointcloud__neon_.enable: true
 pointcloud__neon_.stream_filter: 2
 pointcloud__neon_.stream_index_filter: 0
 pointcloud__neon_.allow_no_texture_points: true
 pointcloud__neon_.pointcloud_qos: SENSOR_DATA
+
 depth_module.depth_profile: 640x480x30
 rgb_camera.color_profile: 640x480x30
+depth_module.infra_profile: 848x480x30
+depth_module.emitter_enabled: false
+
 diagnostics_period: 1.0

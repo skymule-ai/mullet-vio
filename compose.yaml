@@ -35,7 +35,7 @@ services:
       dockerfile: images/openvins/Dockerfile
       args:
         BASE_IMAGE: ${BASE_IMAGE:-ghcr.io/skymule-ai/mullet-ros2-base:v0.4.0}
-    image: ${OPENVINS_IMAGE:-ghcr.io/skymule-ai/mullet-ros-vio-openvins:local}
+    image: ${OPENVINS_IMAGE:-ghcr.io/skymule-ai/mullet-ros-vio-openvins:main}
     network_mode: host
     ipc: host
     runtime: nvidia
