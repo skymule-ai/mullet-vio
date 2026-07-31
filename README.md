@@ -63,12 +63,9 @@ anything:
 ./scripts/validate.sh
 ```
 
-The current OpenVINS container deliberately runs `sleep infinity`, because the
-OpenVINS source, dependencies, build, launch file, and configuration have not
-been integrated. After that work is complete, set `OPENVINS_COMMAND` to the
-chosen `ros2 launch ...` command.
+The current OpenVINS container deliberately runs `sleep infinity`
 
-When OpenVINS has been integrated, this command will build the local image:
+Build the local image:
 
 ```bash
 docker compose --profile openvins build openvins
