@@ -9,4 +9,9 @@ docker compose \
 
 bash -n \
   images/openvins/entrypoint.sh \
-  images/openvins/profile.sh
+  images/openvins/profile.sh \
+  scripts/smoke-openvins.sh
+
+test -f config/openvins/mullet_vio/estimator_config.yaml
+test -f config/openvins/mullet_vio/kalibr_imu_chain.yaml
+test -f config/openvins/mullet_vio/kalibr_imucam_chain.yaml

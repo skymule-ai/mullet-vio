@@ -4,8 +4,8 @@ FROM ${BASE_IMAGE}
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Pin OPENVINS_REF to a full commit SHA for reproducible production images.
-ARG OPENVINS_REPOSITORY=https://github.com/skymule-ai/open_vins.git
-ARG OPENVINS_REF=55c5767995a88444079491cba898e384435b0ed1
+ARG OPENVINS_REPOSITORY=https://github.com/rpng/open_vins.git
+ARG OPENVINS_REF=69488123ed9362dd44b6f28e7f4680abbff1442b
 
 LABEL org.opencontainers.image.title="mullet ROS OpenVINS"
 LABEL org.opencontainers.image.description="OpenVINS container scaffold for the Mullet Jetson platform"
@@ -33,21 +33,15 @@ RUN mkdir -p /opt/openvins_ws/src/ \
   && cd open_vins \
   && git checkout "${OPENVINS_REF}"
 
- RUN source /opt/ros/humble/setup.bash \
-&& cd /opt/openvins_ws/ \
-&& colcon build --event-handlers console_cohesion+ \
---packages-select ov_core ov_init ov_eval \
---parallel-workers 1 \
---cmake-args -DCMAKE_BUILD_TYPE=Release
-
 RUN source /opt/ros/humble/setup.bash \
   && cd /opt/openvins_ws/ \
-  && colcon build \
-    --packages-select ov_msckf \
-    --parallel-workers 1 \
+  && CMAKE_BUILD_PARALLEL_LEVEL=1 colcon build \
+    --merge-install \
     --executor sequential \
-    --cmake-args -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-O0" \
-  || (cd /opt/openvins_ws/build/ov_msckf && make -j1 CXXFLAGS="-O0")
+    --packages-up-to ov_msckf \
+    --cmake-args -DCMAKE_BUILD_TYPE=Release \
+  && source install/setup.bash \
+  && ros2 pkg prefix ov_msckf
 
 COPY images/openvins/entrypoint.sh /usr/local/bin/mullet-openvins-entrypoint
 COPY images/openvins/profile.sh /etc/profile.d/10-mullet-openvins.sh
@@ -56,4 +50,4 @@ RUN chmod 0755 /usr/local/bin/mullet-openvins-entrypoint && \
     chmod 0644 /etc/profile.d/10-mullet-openvins.sh
 
 ENTRYPOINT ["/usr/local/bin/mullet-openvins-entrypoint"]
-CMD ["bash", "-lc", "exec sleep infinity"]
+CMD ["ros2", "launch", "ov_msckf", "subscribe.launch.py", "config_path:=/config/mullet_vio/estimator_config.yaml", "namespace:=uav0/openvins", "rviz_enable:=false"]

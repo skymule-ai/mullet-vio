@@ -1,11 +1,9 @@
 # mullet_ros_vio
 
-Container and deployment scaffolding for ROS 2 visual-inertial odometry on the
-Mullet Jetson platform.
-
-No VIO implementation or third-party dependency is installed by the current
-scaffold. OpenVINS is the first planned implementation; other implementations,
-such as VINS-Fusion, should receive their own image and workspace.
+Container and deployment configuration for ROS 2 visual-inertial odometry on
+the Mullet Jetson platform. The current image builds OpenVINS for ROS 2 Humble;
+other implementations, such as VINS-Fusion, should receive their own image and
+workspace.
 
 ## Architecture
 
@@ -31,10 +29,11 @@ the runtime relationship.
 ## Layout
 
 ```text
-images/openvins/       OpenVINS image shell and integration contract
-config/openvins/       Runtime configuration mount point
+images/openvins/       OpenVINS source build and runtime entrypoint
+config/openvins/       Example runtime configuration mount point
 compose.yaml           RealSense + selectable VIO services
 scripts/validate.sh    Structural checks that do not build images
+scripts/smoke-openvins.sh  Camera-free image startup smoke test
 .github/workflows/     ARM64 image build and publishing
 ```
 
@@ -63,16 +62,17 @@ anything:
 ./scripts/validate.sh
 ```
 
-The OpenVINS image builds the `skymule-ai/open_vins` fork. Its source and
-revision are build arguments:
+The OpenVINS image builds the upstream `rpng/open_vins` repository. Its source
+and revision are build arguments:
 
 ```dotenv
-OPENVINS_REPOSITORY=https://github.com/skymule-ai/open_vins.git
-OPENVINS_REF=55c5767995a88444079491cba898e384435b0ed1
+OPENVINS_REPOSITORY=https://github.com/rpng/open_vins.git
+OPENVINS_REF=69488123ed9362dd44b6f28e7f4680abbff1442b
 ```
 
 `OPENVINS_REF` should be a full commit SHA for reproducible images. To build a
-different fork or revision locally, set these values in `.env` before building.
+different repository or revision locally, set these values in `.env` before
+building.
 
 Build the local image:
 
@@ -80,10 +80,22 @@ Build the local image:
 docker compose --profile openvins build openvins
 ```
 
+Run the camera-free image smoke test after building:
+
+```bash
+./scripts/smoke-openvins.sh
+```
+
+The smoke test verifies package discovery, executable installation, launch-file
+arguments, mounted configuration files, and that OpenVINS remains alive while
+waiting for sensor topics. It does not validate calibration or odometry quality.
+
 Changing `OPENVINS_REF` also invalidates the Docker layer that checks out
 OpenVINS, ensuring the requested revision is rebuilt.
 
-This command will start both RealSense and OpenVINS:
+This command starts both RealSense and OpenVINS. OpenVINS loads
+`/config/mullet_vio/estimator_config.yaml`; that file refers to its IMU and
+camera calibration files in the same directory.
 
 ```bash
 docker compose --profile openvins up
@@ -109,9 +121,9 @@ between `mullet-ros2-base` and those images.
 CI builds for ARM64. Branch pushes publish branch and immutable SHA tags;
 release tags such as `v0.1.0` publish matching image tags.
 
-To build and publish an updated OpenVINS fork revision without changing this
+To build and publish a different OpenVINS revision without changing this
 repository, use **Actions → Build and Push VIO Images → Run workflow**. Supply
-the fork URL as `openvins_repository` and the full fork commit SHA as
+the repository URL as `openvins_repository` and its full commit SHA as
 `openvins_ref`. A manually dispatched run logs in to GHCR and publishes the
 image just like a push-triggered run.
 
@@ -125,5 +137,6 @@ The initial image name is:
 ghcr.io/skymule-ai/mullet-ros-vio-openvins
 ```
 
-Do not create a release tag until OpenVINS and its runtime smoke tests have been
-implemented and validated on the target Jetson.
+Do not create a release tag until the image smoke test passes in CI and a
+hardware test on the target Jetson verifies infrared image and IMU consumption
+plus pose or odometry publication.

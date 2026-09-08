@@ -1,7 +1,0 @@
-/**:
-    ros__parameters:
-      config_path: "/config/mullet_vio/estimator_config.yaml"
-      verbosity: "INFO"
-      use_stereo: true
-      max_cameras: 2
-
