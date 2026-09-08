@@ -25,7 +25,7 @@ docker run --rm \
     test -r /config/mullet_vio/kalibr_imu_chain.yaml
     test -r /config/mullet_vio/kalibr_imucam_chain.yaml
     ros2 launch ov_msckf subscribe.launch.py --show-args \
-      config_path:=/config/mullet_vio/estimator_config.yaml >/dev/null
+      | grep -q "config_path"
   '
 
 docker run --detach \
