@@ -8,16 +8,7 @@ ARG OPENVINS_REPOSITORY=https://github.com/rpng/open_vins.git
 ARG OPENVINS_REF=69488123ed9362dd44b6f28e7f4680abbff1442b
 
 LABEL org.opencontainers.image.title="mullet ROS OpenVINS"
-LABEL org.opencontainers.image.description="OpenVINS container scaffold for the Mullet Jetson platform"
-
-# OpenVINS is intentionally not installed here yet.
-#
-# Integration contract for the implementation owner:
-#   1. Pin the OpenVINS source revision.
-#   2. Declare and install its dependencies in this image, not in ros2-base.
-#   3. Build its ROS 2 packages under /opt/openvins_ws.
-#   4. Leave /opt/openvins_ws/install/setup.bash for the entrypoint to source.
-#   5. Replace the scaffold command with the validated ROS 2 launch command.
+LABEL org.opencontainers.image.description="ROS 2 OpenVINS runtime for the Mullet Jetson platform"
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
   libeigen3-dev libboost-all-dev libceres-dev \
