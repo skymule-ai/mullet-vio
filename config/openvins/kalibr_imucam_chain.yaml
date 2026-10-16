@@ -1,4 +1,6 @@
 %YAML:1.0
+# Example only: calibrated on the drone OpenVINS was first tested on, not on mullet1. A drone's own
+# calibration lives in its mullet-localization config/openvins/.
 
 cam0:
   T_cam_imu:

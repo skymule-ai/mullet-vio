@@ -1,7 +1,7 @@
-# mullet_ros_vio
+# mullet-vio
 
 Container and deployment configuration for ROS 2 visual-inertial odometry on
-the Mullet Jetson platform. The current image builds OpenVINS for ROS 2 Humble;
+the Mullet Jetson platform. The current image builds OpenVINS for ROS 2 Jazzy;
 other implementations, such as VINS-Fusion, should receive their own image and
 workspace.
 
@@ -10,9 +10,9 @@ workspace.
 At build time, each VIO image inherits the shared ROS base:
 
 ```text
-ghcr.io/skymule-ai/mullet-ros2-base:v0.4.0
-├── ghcr.io/skymule-ai/mullet-ros-vio-openvins
-└── ghcr.io/skymule-ai/mullet-ros-vio-vins-fusion  (future)
+ghcr.io/skymule-ai/mullet-ros2-base:v0.5.0
+├── ghcr.io/skymule-ai/mullet-vio-openvins
+└── ghcr.io/skymule-ai/mullet-vio-vins-fusion  (future)
 ```
 
 At runtime, Compose runs the RealSense driver and selected VIO implementation
@@ -31,6 +31,7 @@ the runtime relationship.
 ```text
 images/openvins/       OpenVINS source build and runtime entrypoint
 config/openvins/       Example runtime configuration mount point
+config/realsense/      Example D435i driver configuration (infrared projector off)
 compose.yaml           RealSense + selectable VIO services
 scripts/validate.sh    Structural checks that do not build images
 scripts/smoke-openvins.sh  Camera-free image startup smoke test
@@ -94,7 +95,7 @@ Changing `OPENVINS_REF` also invalidates the Docker layer that checks out
 OpenVINS, ensuring the requested revision is rebuilt.
 
 This command starts both RealSense and OpenVINS. OpenVINS loads
-`/config/mullet_vio/estimator_config.yaml`; that file refers to its IMU and
+`/config/estimator_config.yaml`; that file refers to its IMU and
 camera calibration files in the same directory.
 
 ```bash
@@ -105,6 +106,16 @@ Both services use host networking, the same ROS domain, and the same RMW
 implementation. Only the RealSense container receives USB device access.
 `depends_on` controls container start order only; the VIO node must tolerate
 camera topics becoming available after it starts.
+
+## D435i infrared projector
+
+Keep it off whenever VIO uses the infrared images, as `config/realsense/d435i.yaml` does. The projector's
+dot pattern moves with the camera, and OpenVINS tracks the dots as if they were fixed to the scene: drift
+and lost tracking indoors and near walls (4.5% drift with it on, 1.4% off, on the same walk). Set
+`depth_module.emitter_enabled: 0` (0 off, 1 on, 2 auto). It must be an **integer**: the driver rejects
+`false` with only a WARN and leaves the projector on. Check with
+`ros2 param get /uav0/d435i depth_module.emitter_enabled` (`Integer value is: 0`). The full guide is in
+[mullet-localization](https://github.com/skymule-ai/mullet-localization#d435i-infrared-projector).
 
 ## Dependency ownership
 
@@ -134,7 +145,7 @@ override those CI defaults.
 The initial image name is:
 
 ```text
-ghcr.io/skymule-ai/mullet-ros-vio-openvins
+ghcr.io/skymule-ai/mullet-vio-openvins
 ```
 
 Do not create a release tag until the image smoke test passes in CI and a

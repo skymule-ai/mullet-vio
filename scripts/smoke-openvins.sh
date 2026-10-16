@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-image="${OPENVINS_IMAGE:-ghcr.io/skymule-ai/mullet-ros-vio-openvins:local}"
+image="${OPENVINS_IMAGE:-ghcr.io/skymule-ai/mullet-vio-openvins:local}"
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 config_dir="${repo_root}/config/openvins"
 container_name="mullet-openvins-smoke-${RANDOM}-$$"
@@ -21,9 +21,9 @@ docker run --rm \
   --volume "${config_dir}:/config:ro" \
   "${image}" \
   bash -c '
-    test -r /config/mullet_vio/estimator_config.yaml
-    test -r /config/mullet_vio/kalibr_imu_chain.yaml
-    test -r /config/mullet_vio/kalibr_imucam_chain.yaml
+    test -r /config/estimator_config.yaml
+    test -r /config/kalibr_imu_chain.yaml
+    test -r /config/kalibr_imucam_chain.yaml
     ros2 launch ov_msckf subscribe.launch.py --show-args \
       | grep -q "config_path"
   '

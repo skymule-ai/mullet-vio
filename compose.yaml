@@ -1,23 +1,28 @@
-name: mullet_ros_vio
+name: mullet-vio
 
 x-ros-environment: &ros-environment
   ROS_DOMAIN_ID: ${ROS_DOMAIN_ID:-0}
   RMW_IMPLEMENTATION: ${RMW_IMPLEMENTATION:-rmw_fastrtps_cpp}
+  # Same as mullet-core and the paddock: Fast DDS shared memory across host-networked
+  # containers discovers topics but drops samples.
+  FASTDDS_BUILTIN_TRANSPORTS: ${FASTDDS_BUILTIN_TRANSPORTS:-UDPv4}
   NVIDIA_VISIBLE_DEVICES: ${NVIDIA_VISIBLE_DEVICES:-all}
   NVIDIA_DRIVER_CAPABILITIES: ${NVIDIA_DRIVER_CAPABILITIES:-compute,utility}
 
 services:
   realsense:
     profiles: [realsense, openvins]
-    image: ${REALSENSE_IMAGE:-ghcr.io/skymule-ai/mullet-ros-realsense:v0.3.0}
+    image: ${REALSENSE_IMAGE:-ghcr.io/skymule-ai/mullet-drivers-realsense:main}
     network_mode: host
     ipc: host
     runtime: nvidia
     environment: *ros-environment
-    devices:
-      - /dev/bus/usb:/dev/bus/usb
+    # Mounted, not mapped as a device: the D435i re-enumerates on reset.
+    device_cgroup_rules:
+      - "c 189:* rmw"  # USB devices
     volumes:
       - ./config/realsense:/config:ro
+      - /dev/bus/usb:/dev/bus/usb
     command:
       - ros2
       - launch
@@ -34,10 +39,10 @@ services:
       context: .
       dockerfile: images/openvins/Dockerfile
       args:
-        BASE_IMAGE: ${BASE_IMAGE:-ghcr.io/skymule-ai/mullet-ros2-base:v0.4.0}
+        BASE_IMAGE: ${BASE_IMAGE:-ghcr.io/skymule-ai/mullet-ros2-base:v0.5.0}
         OPENVINS_REPOSITORY: ${OPENVINS_REPOSITORY:-https://github.com/rpng/open_vins.git}
         OPENVINS_REF: ${OPENVINS_REF:-69488123ed9362dd44b6f28e7f4680abbff1442b}
-    image: ${OPENVINS_IMAGE:-ghcr.io/skymule-ai/mullet-ros-vio-openvins:v0.1.1}
+    image: ${OPENVINS_IMAGE:-ghcr.io/skymule-ai/mullet-vio-openvins:main}
     network_mode: host
     ipc: host
     runtime: nvidia

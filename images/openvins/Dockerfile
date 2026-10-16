@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=ghcr.io/skymule-ai/mullet-ros2-base:v0.4.0
+ARG BASE_IMAGE=ghcr.io/skymule-ai/mullet-ros2-base:v0.5.0
 FROM ${BASE_IMAGE}
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -15,16 +15,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   libopencv-dev python3-opencv \
   python3-dev python3-matplotlib python3-numpy \
   python3-psutil python3-tk \
-  ros-humble-cv-bridge ros-humble-image-transport \
+  ros-${ROS_DISTRO}-cv-bridge ros-${ROS_DISTRO}-image-transport \
   && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /opt/openvins_ws/src/ \
   && cd /opt/openvins_ws/src/ \
   && git clone "${OPENVINS_REPOSITORY}" open_vins \
   && cd open_vins \
-  && git checkout "${OPENVINS_REF}"
+  && git checkout "${OPENVINS_REF}" \
+  # Jazzy ships only the .hpp headers of these three; Humble has both.
+  && grep -rlE '(cv_bridge/cv_bridge|image_transport/image_transport|tf2_geometry_msgs/tf2_geometry_msgs)\.h[>"]' . \
+     | xargs -r sed -i -E 's#(cv_bridge/cv_bridge|image_transport/image_transport|tf2_geometry_msgs/tf2_geometry_msgs)\.h([>"])#\1.hpp\2#'
 
-RUN source /opt/ros/humble/setup.bash \
+RUN source /usr/local/share/mullet-ros/setup.bash \
   && cd /opt/openvins_ws/ \
   && CMAKE_BUILD_PARALLEL_LEVEL=1 colcon build \
     --merge-install \
@@ -32,7 +35,8 @@ RUN source /opt/ros/humble/setup.bash \
     --packages-up-to ov_msckf \
     --cmake-args -DCMAKE_BUILD_TYPE=Release \
   && source install/setup.bash \
-  && ros2 pkg prefix ov_msckf
+  && ros2 pkg prefix ov_msckf \
+  && rm -rf build log
 
 COPY images/openvins/entrypoint.sh /usr/local/bin/mullet-openvins-entrypoint
 COPY images/openvins/profile.sh /etc/profile.d/10-mullet-openvins.sh
@@ -41,4 +45,4 @@ RUN chmod 0755 /usr/local/bin/mullet-openvins-entrypoint && \
     chmod 0644 /etc/profile.d/10-mullet-openvins.sh
 
 ENTRYPOINT ["/usr/local/bin/mullet-openvins-entrypoint"]
-CMD ["ros2", "launch", "ov_msckf", "subscribe.launch.py", "config_path:=/config/mullet_vio/estimator_config.yaml", "namespace:=uav0/openvins", "rviz_enable:=false"]
+CMD ["ros2", "launch", "ov_msckf", "subscribe.launch.py", "config_path:=/config/estimator_config.yaml", "namespace:=uav0/openvins", "rviz_enable:=false"]
