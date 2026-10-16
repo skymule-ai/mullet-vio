@@ -3,7 +3,7 @@
 The Dockerfile builds the pinned upstream OpenVINS revision in
 `/opt/openvins_ws` and installs the `ov_msckf` estimator and its dependencies.
 The image starts `subscribe.launch.py` by default and reads the mounted
-`/config/mullet_vio/estimator_config.yaml` configuration.
+`/config/estimator_config.yaml` configuration.
 
 Preserve these integration contracts:
 

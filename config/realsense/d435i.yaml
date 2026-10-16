@@ -19,6 +19,6 @@ pointcloud__neon_.pointcloud_qos: SENSOR_DATA
 depth_module.depth_profile: 640x480x30
 rgb_camera.color_profile: 640x480x30
 depth_module.infra_profile: 848x480x30
-depth_module.emitter_enabled: false
+depth_module.emitter_enabled: 0  # 0 off, 1 on, 2 auto. An integer: the driver rejects false and leaves it on
 
 diagnostics_period: 1.0
