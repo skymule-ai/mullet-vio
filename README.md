@@ -10,7 +10,7 @@ workspace.
 At build time, each VIO image inherits the shared ROS base:
 
 ```text
-ghcr.io/skymule-ai/mullet-ros2-base:v0.5.0
+ghcr.io/skymule-ai/mullet-base:v0.5.1
 ├── ghcr.io/skymule-ai/mullet-vio-openvins
 └── ghcr.io/skymule-ai/mullet-vio-vins-fusion  (future)
 ```
@@ -121,11 +121,11 @@ and lost tracking indoors and near walls (4.5% drift with it on, 1.4% off, on th
 
 Each VIO implementation must declare its ROS and system dependencies in its
 own package metadata and image build. Do not add OpenVINS-specific dependencies
-to `mullet-ros2-base`.
+to `mullet-base`.
 
 If several perception images later need the same large or custom-built
 dependency, introduce a separately versioned `mullet-ros-perception-base`
-between `mullet-ros2-base` and those images.
+between `mullet-base` and those images.
 
 ## Releases
 

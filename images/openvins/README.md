@@ -7,7 +7,7 @@ The image starts `subscribe.launch.py` by default and reads the mounted
 
 Preserve these integration contracts:
 
-- Inherit an immutable `mullet-ros2-base` release through `BASE_IMAGE`.
+- Inherit an immutable `mullet-base` release through `BASE_IMAGE`.
 - Pin all upstream source revisions.
 - Keep OpenVINS and implementation-specific dependencies outside the shared
   ROS base image.
