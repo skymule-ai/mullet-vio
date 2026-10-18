@@ -32,11 +32,15 @@ the runtime relationship.
 images/openvins/       OpenVINS source build and runtime entrypoint
 config/openvins/       Example runtime configuration mount point
 config/realsense/      Example D435i driver configuration (infrared projector off)
+docs/openvins.md       How OpenVINS works, our settings, failure modes
 compose.yaml           RealSense + selectable VIO services
 scripts/validate.sh    Structural checks that do not build images
 scripts/smoke-openvins.sh  Camera-free image startup smoke test
 .github/workflows/     ARM64 image build and publishing
 ```
+
+[docs/openvins.md](docs/openvins.md) explains the estimator, its initialisation, what it publishes,
+the settings we changed and the failure modes seen on mullet1. Read it before tuning.
 
 Future implementations should be isolated:
 
