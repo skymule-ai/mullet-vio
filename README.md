@@ -10,7 +10,7 @@ workspace.
 At build time, each VIO image inherits the shared ROS base:
 
 ```text
-ghcr.io/skymule-ai/mullet-base:v0.5.1
+ghcr.io/skymule-ai/mullet-base:v0.6.0
 ├── ghcr.io/skymule-ai/mullet-vio-openvins
 └── ghcr.io/skymule-ai/mullet-vio-vins-fusion  (future)
 ```
